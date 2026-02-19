@@ -28,14 +28,14 @@ void allocate(struct node** Parent, int row) {
         struct node* cursor = *Parent;
         struct node2* cursor2 = cursor->nrow;
         while(cursor->next != NULL) {
-            while(cursor2->next2 != NULL) {
-                cursor2=cursor2->next2;
+            while(cursor2->next2) {
+                cursor2 = cursor2->next2;
             }
-            cursor2->next2=newRow;
-            cursor2=cursor->nrow;
-            cursor=cursor->next;
+            cursor2->next2 = newRow;
+            cursor = cursor->next;
+            cursor2 = cursor->nrow;
         }
-        cursor->next=newNode;
+        cursor->next = newNode;
     }
 }
 
