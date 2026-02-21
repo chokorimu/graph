@@ -1,33 +1,89 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-void print(int** arr, int row) {
-    for(int i=0; i<row; i++) {
-        for(int j=0; j<row; j++) {
-            printf("%d",arr[i][j]);
+struct Child {
+    int value;
+    struct Child* next2;
+};
+
+struct Parent {
+    struct Child* nrow;
+    struct Parent* next;
+};
+
+void allocate(struct Parent** head, int n) {
+    int current_rows = 0;
+    struct Parent* cursor = *head;
+
+    while (cursor != NULL) {
+        current_rows++;
+        struct Child* cCursor = cursor->nrow;
+        
+        int current_cols = 0;
+        struct Child* lastChild = NULL;
+        while (cCursor != NULL) {
+            current_cols++;
+            lastChild = cCursor;
+            cCursor = cCursor->next2;
+        }
+        for (int j = current_cols; j < n; j++) {
+            struct Child* newCol = malloc(sizeof(*newCol));
+            newCol->value = 0;
+            newCol->next2 = NULL;
+            if (lastChild == NULL) {
+                cursor->nrow = newCol;
+            } else {
+                lastChild->next2 = newCol;
+            }
+            lastChild = newCol;
+        }
+        cursor = cursor->next;
+    }
+    for (int i = current_rows; i < n; i++) {
+        struct Parent* newNode = malloc(sizeof(*newNode));
+        newNode->next = NULL;
+        
+        struct Child* colHead = NULL;
+        struct Child* lastCol = NULL;
+        for (int j = 0; j < n; j++) {
+            struct Child* newCol = malloc(sizeof(*newCol));
+            newCol->value = 0;
+            newCol->next2 = NULL;
+            if (colHead == NULL) colHead = newCol;
+            if (lastCol != NULL) lastCol->next2 = newCol;
+            lastCol = newCol;
+        }
+        newNode->nrow = colHead;
+
+        if (*head == NULL) {
+            *head = newNode;
+        } else {
+            struct Parent* rowSeeker = *head;
+            while (rowSeeker->next != NULL) rowSeeker = rowSeeker->next;
+            rowSeeker->next = newNode;
+        }
+    }
+}
+
+void iterate(struct Parent** head) {
+    struct Parent* cursor = *head;  
+    struct Child* cursor2;
+    while(cursor != NULL) {
+        cursor2 = cursor->nrow;
+        while(cursor2 != NULL) {
+            printf("%3d",cursor2->value);
+            cursor2=cursor2->next2;
         }
         printf("\n");
+    cursor=cursor->next;
     }
 }
 
 int main() {
-    int row = 4;
-    int** arr = malloc(row*sizeof(*arr));
-
-    for(int i=0; i<row; i++) {
-        arr[i] = malloc(row*sizeof(**arr));
-        for(int j=0; j<row; j++) {
-            arr[i][j] = 0;
-        }
-    }
-    arr[2][3] = 5;
-    print(arr, row);
-
-    for(int i=0; i<row; i++) {
-        free(arr[i]);
-    }
-    free(arr);
-
+    struct Parent* head = NULL;
+    allocate(&head, 4);
+    allocate(&head, 5);
+    iterate(&head);
+    
     return 0;
 }
