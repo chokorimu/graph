@@ -77,6 +77,15 @@ void modify(struct Parent** head, int val, int m, int n) {
     cursor2->value = val;
 }
 
+int dijkstra(struct Parent** head) {
+    struct Child* currentShortest;
+    struct Parent* cursor = *head;
+    while(cursor != NULL) {
+        
+    }
+    return 0;
+}
+
 void iterate(struct Parent** head) {
     struct Parent* cursor = *head;  
     struct Child* cursor2;
@@ -101,6 +110,7 @@ int main() {
     modify(&head, 21, 4, 3);
     modify(&head, 28, 4, 5);
     iterate(&head);
+    dijkstra(&head);
     
     return 0;
 }
