@@ -3,6 +3,7 @@
 
 struct Child {
     int value;
+    int weight;
     struct Child* next2;
 };
 
@@ -29,6 +30,7 @@ void allocate(struct Parent** head, int n) {
         for (int j = current_cols; j < n; j++) {
             struct Child* newCol = malloc(sizeof(*newCol));
             newCol->value = 0;
+            newCol->weight = -1;
             newCol->next2 = NULL;
             if (lastChild == NULL) {
                 cursor->nrow = newCol;
@@ -48,6 +50,7 @@ void allocate(struct Parent** head, int n) {
         for (int j = 0; j < n; j++) {
             struct Child* newCol = malloc(sizeof(*newCol));
             newCol->value = 0;
+            newCol->weight = -1;
             newCol->next2 = NULL;
             if (colHead == NULL) colHead = newCol;
             if (lastCol != NULL) lastCol->next2 = newCol;
@@ -78,10 +81,17 @@ void modify(struct Parent** head, int val, int m, int n) {
 }
 
 int dijkstra(struct Parent** head) {
-    struct Child* currentShortest;
     struct Parent* cursor = *head;
+    struct Child* cursor2 = cursor->nrow;
     while(cursor != NULL) {
-        
+        while(cursor2 != NULL) {
+            struct Child* currentShortest = malloc(sizeof(*currentShortest));
+            if(cursor2->value > 0) {
+                cursor2->weight=cursor2->value;
+            }
+            cursor2=cursor2->next2;
+        }
+        cursor=cursor->next;
     }
     return 0;
 }
