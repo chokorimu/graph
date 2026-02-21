@@ -65,13 +65,25 @@ void allocate(struct Parent** head, int n) {
     }
 }
 
+void modify(struct Parent** head, int val, int m, int n) {
+    struct Parent* cursor = *head;
+    for(int i=0; i<m-1; i++) {
+        cursor=cursor->next;    
+    }
+    struct Child* cursor2 = cursor->nrow;
+    for(int j=0; j<n-1; j++) {
+        cursor2=cursor2->next2;    
+    }
+    cursor2->value = val;
+}
+
 void iterate(struct Parent** head) {
     struct Parent* cursor = *head;  
     struct Child* cursor2;
     while(cursor != NULL) {
         cursor2 = cursor->nrow;
         while(cursor2 != NULL) {
-            printf("%3d",cursor2->value);
+            printf("%4d",cursor2->value);
             cursor2=cursor2->next2;
         }
         printf("\n");
@@ -81,8 +93,13 @@ void iterate(struct Parent** head) {
 
 int main() {
     struct Parent* head = NULL;
-    allocate(&head, 4);
     allocate(&head, 5);
+    modify(&head, 6, 1, 2);
+    modify(&head, 7, 1, 4);
+    modify(&head, 12, 2, 3);
+    modify(&head, 10, 3, 5);
+    modify(&head, 21, 4, 3);
+    modify(&head, 28, 4, 5);
     iterate(&head);
     
     return 0;
