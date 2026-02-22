@@ -1,48 +1,63 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct Child {
     int value;
-    int weight;
+    int index2;
     struct Child* next2;
 };
 
 struct Parent {
     struct Child* nrow;
+    int index;
+    int currentShortest;
+    bool isExplored;
     struct Parent* next;
 };
 
 void allocate(struct Parent** head, int n) {
-    int current_rows = 0;
     struct Parent* cursor = *head;
+    int current_rows = 0;
 
+    // Phase 1: Update existing rows and add missing columns
     while (cursor != NULL) {
-        current_rows++;
-        struct Child* cCursor = cursor->nrow;
+        cursor->index = current_rows; 
+        cursor->currentShortest = 2147483647; // Default "Infinity"
+        cursor->isExplored = false;
         
+        struct Child* cCursor = cursor->nrow;
         int current_cols = 0;
         struct Child* lastChild = NULL;
+        
+        // Traverse existing columns
         while (cCursor != NULL) {
-            current_cols++;
+            cCursor->index2 = current_cols; // Ensure existing child knows its column index
             lastChild = cCursor;
             cCursor = cCursor->next2;
+            current_cols++;
         }
+        
+        // Add new columns to existing row if needed
         for (int j = current_cols; j < n; j++) {
             struct Child* newCol = malloc(sizeof(*newCol));
             newCol->value = 0;
-            newCol->weight = -1;
+            newCol->index2 = j; // Assign column index
             newCol->next2 = NULL;
-            if (lastChild == NULL) {
-                cursor->nrow = newCol;
-            } else {
-                lastChild->next2 = newCol;
-            }
+            if (lastChild == NULL) cursor->nrow = newCol;
+            else lastChild->next2 = newCol;
             lastChild = newCol;
         }
+        current_rows++;
         cursor = cursor->next;
     }
+
+    // Phase 2: Add brand new rows (nodes)
     for (int i = current_rows; i < n; i++) {
         struct Parent* newNode = malloc(sizeof(*newNode));
+        newNode->index = i;
+        newNode->currentShortest = 2147483647;
+        newNode->isExplored = false;
         newNode->next = NULL;
         
         struct Child* colHead = NULL;
@@ -50,7 +65,7 @@ void allocate(struct Parent** head, int n) {
         for (int j = 0; j < n; j++) {
             struct Child* newCol = malloc(sizeof(*newCol));
             newCol->value = 0;
-            newCol->weight = -1;
+            newCol->index2 = j; // Assign column index
             newCol->next2 = NULL;
             if (colHead == NULL) colHead = newCol;
             if (lastCol != NULL) lastCol->next2 = newCol;
@@ -80,23 +95,52 @@ void modify(struct Parent** head, int val, int m, int n) {
     cursor2->value = val;
 }
 
-int dijkstra(struct Parent** head) {
+void updateEstimate(struct Parent** head, int updatedIndex, int updatedValue) {
     struct Parent* cursor = *head;
-    struct Child* cursor2 = cursor->nrow;
-    while(cursor != NULL) {
-        while(cursor2 != NULL) {
-            struct Child* currentShortest = malloc(sizeof(*currentShortest));
-            if(cursor2->value > 0) {
-                cursor2->weight=cursor2->value;
-            }
-            cursor2=cursor2->next2;
-        }
-        cursor=cursor->next;
+    while(cursor != NULL && cursor->index != updatedIndex) {
+        cursor = cursor->next;
     }
-    return 0;
+    if(cursor != NULL && updatedValue < cursor->currentShortest) {
+        cursor->currentShortest = updatedValue;
+    }
 }
 
-void iterate(struct Parent** head) {
+int dijkstra(struct Parent** head, int target) {
+    if (*head != NULL) (*head)->currentShortest = 0;
+    struct Parent* cursor = *head;
+
+    while(cursor != NULL && cursor->index != target) {
+        cursor->isExplored = true; 
+        struct Child* cursor2 = cursor->nrow;
+
+        while(cursor2 != NULL) {
+            if(cursor2->value > 0) {
+                int totalPath = cursor->currentShortest + cursor2->value;
+                updateEstimate(head, cursor2->index2, totalPath);
+            }
+            cursor2 = cursor2->next2;
+        }
+        struct Parent* seeker = *head;
+        struct Parent* bestNext = NULL;
+        int minDistance = -1;
+
+        while(seeker != NULL) {
+            if(!seeker->isExplored && (seeker->currentShortest < minDistance || minDistance == -1)) {
+                minDistance = seeker->currentShortest;
+                bestNext = seeker;
+            }
+            seeker = seeker->next;
+        }
+        cursor = bestNext;
+        if(cursor == NULL) break;
+    }
+    if (cursor != NULL && cursor->index == target) {
+        return cursor->currentShortest;
+    }
+    return -1; 
+}
+
+void printGraph(struct Parent** head) {
     struct Parent* cursor = *head;  
     struct Child* cursor2;
     while(cursor != NULL) {
@@ -106,7 +150,7 @@ void iterate(struct Parent** head) {
             cursor2=cursor2->next2;
         }
         printf("\n");
-    cursor=cursor->next;
+    cursor = cursor->next;
     }
 }
 
@@ -119,8 +163,8 @@ int main() {
     modify(&head, 10, 3, 5);
     modify(&head, 21, 4, 3);
     modify(&head, 28, 4, 5);
-    iterate(&head);
-    dijkstra(&head);
+    printGraph(&head);
+    printf("%d\n", dijkstra(&head, 4));
     
     return 0;
 }
