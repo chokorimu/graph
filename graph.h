@@ -1,17 +1,28 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#define N 5   // jumlah node dalam graph
-/* Index node:
-   A = 0  (BO)
-   D = 1  (Indomaret SA)
-   G = 2  (Gacoan Tlogomas)
-   E = 3  (Masjid AT)
-   I = 4  (UM Veteran)
-*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-// Deklarasi fungsi
-void printGraph(int graph[N][N]);
-void dijkstra(int graph[N][N], int start);
+struct Child {
+    int value;
+    int index2;
+    struct Child* next2;
+};
+
+struct Parent {
+    struct Child* nrow;
+    int index;
+    int currentShortest;
+    bool isExplored;
+    struct Parent* next;
+};
+
+void allocate(struct Parent** head, int n);
+void modify(struct Parent** head, int val, int m, int n);
+void updateEstimate(struct Parent** head, int updatedIndex, int updatedValue);
+int dijkstra(struct Parent** head, int target);
+void printGraph(struct Parent** head);
 
 #endif
